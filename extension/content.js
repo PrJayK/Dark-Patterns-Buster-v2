@@ -3,7 +3,7 @@
 // Function to extract text content and their IDs
 function extractTexts() {
     // Select all elements in the document
-    let allElements = document.querySelectorAll('*:not(script):not(noscript):not(style):not(br):not(a):not(img):not(option)');
+    let allElements = document.querySelectorAll('*:not(script):not(noscript):not(style):not(br):not(img):not(option)');
 
     let textData = [];
 
@@ -45,7 +45,6 @@ function extractTexts() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'GET_TEXT') {
         let textData = extractTexts();
-        console.log(textData.length);
         sendResponse({ textData: textData });
     } else if (message.type === 'HIGHLIGHT_TEXTS') {
         message.ids.forEach(id => {
