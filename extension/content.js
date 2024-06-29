@@ -45,6 +45,7 @@ function extractTexts() {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'GET_TEXT') {
         let textData = extractTexts();
+        console.log(textData.length);
         sendResponse({ textData: textData });
     } else if (message.type === 'HIGHLIGHT_TEXTS') {
         message.ids.forEach(id => {
