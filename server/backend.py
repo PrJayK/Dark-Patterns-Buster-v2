@@ -11,10 +11,6 @@ def detect_dark_patterns(texts):
             dark_pattern_ids.append(text['id'])
     return dark_pattern_ids
 
-@app.route('/')
-def home():
-    return 'Hello World!'
-
 @app.route('/check_dark_patterns', methods=['POST'])
 def check_dark_patterns():
     data = request.get_json()
