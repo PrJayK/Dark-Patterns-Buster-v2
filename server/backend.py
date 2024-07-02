@@ -1,31 +1,8 @@
 from flask import Flask, request, jsonify
 import json
-import pickle
-import pandas as pd
-
+from model.load_models import random_forest_classifier,svm_classifier,vect,category_map
 
 app = Flask(__name__)
-
-# Your ML model for detecting dark patterns
-
-def load_models():
-    rfc = 'Dark-Patterns-Buster-v2\model\rfc.pkl'
-    svm = 'Dark-Patterns-Buster-v2\model\svc.pkl'
-    vectorizer = 'Dark-Patterns-Buster-v2\model\tfidf_vectorizer.pkl'
-    df = pd.read_csv('Dark-Patterns-Buster-v2\model\dataset.tsv', sep="\t", encoding="utf-8")
-    map = {i: j for i, j in enumerate(df['Pattern Category'].unique())}
-
-    with open(rfc, 'rb') as file:
-        random_forest_classifier = pickle.load(file)
-
-    with open(svm, 'rb') as file:
-        svm_classifier = pickle.load(file)
-
-    with open(vectorizer, 'rb') as file:
-        vect = pickle.load(file)
-
-    return random_forest_classifier,svm_classifier,vect,map
-
 
 def detect_dark_patterns(texts):
 
@@ -45,8 +22,6 @@ def detect_dark_patterns(texts):
 
     dark_pattern_ids = []
 
-    random_forest_classifier,svm_classifier,vect,map = load_models()
-
     text = [item['text'] for item in texts]
     ids = [item['id'] for item in texts]
 
@@ -62,8 +37,8 @@ def detect_dark_patterns(texts):
     for id_, rf_pred, svm_pred in zip(ids, rf_predictions, svm_predictions):
         dark_pattern_ids.append({
             'id': id_,
-            'random_forest_prediction': map[int(rf_pred)],
-            'svm_prediction': map[int(svm_pred)] 
+            'random_forest_prediction': category_map[int(rf_pred)],
+            'svm_prediction': category_map[int(svm_pred)] 
         })
     return dark_pattern_ids
 
