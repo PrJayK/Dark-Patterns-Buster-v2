@@ -47,12 +47,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         let textData = extractTexts();
         sendResponse({ textData: textData });
     } else if (message.type === 'HIGHLIGHT_TEXTS') {
-        message.ids.forEach(id => {
-            let element = document.getElementById(id);
+        let c = 0;
+        message.ids.forEach(darkElement => {
+            let element = document.getElementById(darkElement.id);
             if (element) {
                 element.style.backgroundColor = 'red';
             }
+            c++;
         });
+        console.log(c);
     }
 });
   
