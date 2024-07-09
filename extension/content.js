@@ -1,8 +1,33 @@
 // content.js
+const css = `
+.tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1000; /* Ensure the tooltip is on top */
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none; /* Disable pointer events to avoid blocking interactions */
+}
 
-// Function to extract text content and their IDs
+.tooltip-visible {
+  visibility: visible;
+  opacity: 1;
+}
+`;
+
+const style = document.createElement('style');
+style.textContent = css;
+
+document.head.appendChild(style);
+
+
 function extractTexts() {
-    // Select all elements in the document
     let allElements = document.querySelectorAll('*:not(script):not(noscript):not(style):not(br):not(img):not(option)');
 
     let textData = [];
@@ -11,28 +36,22 @@ function extractTexts() {
         let id = element.id;
         let text = '';
 
-        // Iterate through child nodes
         element.childNodes.forEach(node => {
-            // Check if it's a text node and exclude whitespace nodes
             if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '') {
                 text += node.nodeValue.trim() + ' ';
             }
         });
 
-        // Remove trailing whitespace and log the result
         text = text.trim();
 
         if(text) {
             if (!id) {
-                // If element doesn't have an id, generate a unique id
-                id = `generated-id-${index + 1}`; // Example: generated-id-1, generated-id-2, etc.
-                element.id = id; // Assign the generated id to the element
+                id = `generated-id-${index + 1}`;
+                element.id = id;
             }
         
-            // Create an object with id and text properties
             let entry = { id: id, text: text };
     
-            // Push the entry object into the textData array
             textData.push(entry);
         }
     });
@@ -41,7 +60,6 @@ function extractTexts() {
 }
 
   
-// Listener for messages from the background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'GET_TEXT') {
         let textData = extractTexts();
@@ -52,6 +70,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             let element = document.getElementById(darkElement.id);
             if (element) {
                 element.style.backgroundColor = 'red';
+                let tooltiptext = '';
+                if(darkElement.svm_prediction !== 'Not Dark Pattern') {
+                    tooltiptext = darkElement.svm_prediction;
+                } else {
+                    tooltiptext = darkElement.random_forest_prediction;
+                }
+
+                // Create the tooltip text element
+                let tooltipText = document.createElement('span');
+                tooltipText.className = 'tooltiptext';
+                tooltipText.textContent = tooltiptext;
+                document.body.appendChild(tooltipText);
+
+                // Event listener to show tooltip on hover
+                element.addEventListener('mouseenter', () => {
+                    const rect = element.getBoundingClientRect();
+                    tooltipText.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
+                    tooltipText.style.top = `${rect.top + window.scrollY - tooltipText.offsetHeight}px`;
+                    tooltipText.classList.add('tooltip-visible');
+                });
+
+                // Event listener to hide tooltip when not hovering
+                element.addEventListener('mouseleave', () => {
+                    tooltipText.classList.remove('tooltip-visible');
+                });
+        
             }
             c++;
         });
